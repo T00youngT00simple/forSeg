@@ -76,7 +76,7 @@ export default class SseToolbar extends React.Component {
         }
     }
 
-    app.js(name, init) {
+    renderCheckbox(name, init) {
         if (this.state[name + "Check"] == undefined) {
             const o = {};
             this.state[name + "Check"] = init;
