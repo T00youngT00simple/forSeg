@@ -67,15 +67,15 @@ export default class SseToolbar3d extends SseToolbar {
                 <div className="vflex">
                     <div className="tool-title">View Interaction</div>
                     <div className="v group">
-                        {this.app.js("autoFocusCommand", false)}
-                        {this.app.js("autoFilterCommand", false)}
+                        {this.renderCheckbox("autoFocusCommand", false)}
+                        {this.renderCheckbox("autoFilterCommand", false)}
                     </div>
                 </div>
                 <div className="vflex">
                     <div className="tool-title">Visual Helpers</div>
                     <div className="v group">
-                        {this.app.js("selectionOutlineCommand", true)}
-                        {this.app.js("globalboxCommand", true)}
+                        {this.renderCheckbox("selectionOutlineCommand", true)}
+                        {this.renderCheckbox("globalboxCommand", true)}
                     </div>
                 </div>
                 <div className="vflex">
