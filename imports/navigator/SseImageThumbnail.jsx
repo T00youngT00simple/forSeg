@@ -21,12 +21,6 @@ class SseImageThumbnail extends React.Component {
                 <img
                     src={image.url.endsWith(".pcd") ? "/pcl_horz_large_neg.png" : SseGlobals.getFileUrl(image.url + "?size=small")}/>
                 <div className="w100 text-align-center text-crop">{name}</div>
-                <div>
-                    {this.props.annotated
-                        ? <Check/>
-                        : null}
-                </div>
-
             </div>
         );
     }

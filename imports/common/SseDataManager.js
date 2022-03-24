@@ -1,5 +1,7 @@
 import FIC from "fastintcompression";
 import SseMsg from "./SseMsg";
+import { getCloudDataDetail, postCloudDataDetail } from "../../api/segmentation"
+import { baseUrl } from '../../config/env'
 
 export default class SseDataManager {
     constructor() {
@@ -99,28 +101,53 @@ export default class SseDataManager {
     }
 
 
-    saveBinaryFile(fileName, data) {
+    saveBinaryFile(imageId, data) {
+        // const worker = new Worker("/SseDataWorker.js");
+        // worker.addEventListener("message", (arg) => {
+        //     worker.terminate();
+        //     //this.sendMsg("bottom-right-label", {message: "Sending..."})
+        //     const binary = arg.data.result;
+        //     if (!binary)
+        //         return;
+
+        //     // change Url ?
+        //     const url = "/save" + fileName;
+        //     // const url = "http://localhost:8000/cloud/data/list/"
+
+        //     const oReq = new XMLHttpRequest();
+        //     oReq.open("POST", url, true);
+        //     oReq.setRequestHeader("Content-Type", "application/octet-stream");
+        //     oReq.send(binary);
+        // });
+
+
+        // and work here
+          // this data were ... like [0,0,0,0,0 ...........]
+        // will post is definitely not like this
+
+        // checkout this function to someone api post meta data 
+        // attribute in meta
+
+        // like load    allSave
         const worker = new Worker("/SseDataWorker.js");
         worker.addEventListener("message", (arg) => {
             worker.terminate();
             //this.sendMsg("bottom-right-label", {message: "Sending..."})
-            const binary = arg.data.result;
-            if (!binary)
-                return;
+            postCloudDataDetail(imageId, data).then(res => {
 
-            const url = "/save" + fileName;
-            const oReq = new XMLHttpRequest();
-            oReq.open("POST", url, true);
-            oReq.setRequestHeader("Content-Type", "application/octet-stream");
-            oReq.send(binary);
+            })
+
         });
         worker.postMessage({operation: "compress", data});
     }
 
-    loadBinaryFile(fileName) {
+    loadBinaryFile(imageId) {
         const worker = new Worker("/SseDataWorker.js");
 
-        const url = "/datafile" + fileName;
+        // to be added real APi
+        // const url = "/datafile" + fileName;
+        const url =  `${baseUrl}/cloud/${imageId}/data/`;
+
         const oReq = new XMLHttpRequest();
 
         oReq.responseType = "arraybuffer";

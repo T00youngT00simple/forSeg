@@ -20,15 +20,22 @@ class SseBottomBar extends React.Component {
     }
 
     componentDidMount() {
+        //  get meta   
         this.onMsg("enableCommand", arg => {
             this.hooks[arg.key] = arg.text;
         });
+
         this.onMsg("disableCommand", arg => {
             delete this.hooks[arg.key];
         });
 
         this.onMsg("currentSample", (arg) => {
+            console.log("arg");
+            console.log(arg);
+
             this.currentSample = arg.data;
+            // setState from message queuing 
+
             this.setState({tags: this.currentSample.tags || []})
         });
         this.retriggerMsg("currentSample");
@@ -121,11 +128,34 @@ class SseBottomBar extends React.Component {
 }
 
 export default withTracker((props) => {
+    // if dont give up meteor, can get sseProps(propsTags) from Api here
+    // sse-props were all tags
+
+    // appProps object
+    // {
+    //     "tags": {
+    //         "_id": "JPiWsSDRD4Egj7AKv",
+    //         "key": "tags",
+    //         "value": [
+    //             "ssssw1qws",
+    //             "dfgdfgdfgdfg",
+    //             "3333333",
+    //             "qweqweqwe",
+    //             "dfgdfgdfgdf",
+    //             "1"
+    //         ]
+    //     }
+    // }
+
     Meteor.subscribe("sse-props");
     const aps = SseProps.find().fetch();
     const appProps = _.indexBy(aps, "key");
     if (!appProps.tags)
         appProps.tags = {value: []};
+
+    console.log("appProps");
+    console.log(appProps);
+    
 
     return {appProps};
 })(SseBottomBar);

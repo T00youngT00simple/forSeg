@@ -185,7 +185,6 @@ export default class SseClassChooser extends SseToolbar {
                                 }}
                                 style={
                                     {
-
                                         "width": "100%",
                                         "minHeight": "20px",
                                         "margin": "1px",

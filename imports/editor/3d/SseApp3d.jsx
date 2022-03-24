@@ -15,12 +15,16 @@ import SseObjectToolbar from "./SseObjectToolbar";
 import SseToolbar3d from "./SseToolbar3d";
 import SseTooltips3d from "./SseTooltips3d";
 
+import { getImageInfoDetail} from "../../../api/segmentation"  
+
 export default class SseApp3d extends React.Component {
 
     constructor() {
         super();
 
-        this.state = {};
+        this.state = {
+            imageUrl: null
+        };
 
         this.classesSets = [];
         Meteor.call("getClassesSets", (err, res) => {
@@ -42,6 +46,13 @@ export default class SseApp3d extends React.Component {
     }
 
     componentDidMount() {
+        getImageInfoDetail(this.props.imageId).then(res => {
+            this.setState({
+                imageUrl: res.image.url
+            })
+
+        });
+
         this.setupTooltips();
     }
 
@@ -70,8 +81,9 @@ export default class SseApp3d extends React.Component {
                                             id="canvasContainer"
                                             className="grow relative">
                                             <SseEditor3d
-                                                imageUrl={this.props.imageUrl
-                                                }
+                                                imageUrl={this.state.imageUrl}
+                                                imageId={this.props.imageId}
+                                                classesSets={this.classesSets}
                                             />
                                             <div
                                                 id="waiting"
@@ -101,8 +113,7 @@ export default class SseApp3d extends React.Component {
                     </div>
                 </MuiThemeProvider>
             </div>
-        )
-            ;
+        );
     }
 }
 

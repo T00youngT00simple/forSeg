@@ -7,8 +7,11 @@ import SseImageThumbnail from "./SseImageThumbnail";
 import SseNavigatorToolbar from "./SseNavigatorToolbar";
 
 import {CardText, CardTitle, IconButton, Typography} from '@material-ui/core';
+import { Upload, Modal } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { getImageInfoList } from "../../api/segmentation"
 
-import {withTracker} from 'meteor/react-meteor-data';
+
 import {Meteor} from "meteor/meteor";
 import {Link} from 'react-router-dom'
 import {ArrowLeftBold, ArrowRightBold, Folder} from 'mdi-material-ui';
@@ -27,35 +30,67 @@ class SseNavigatorApp extends React.Component {
     serverCall(props) {
 
         const params = props.match.params;
+        // {   params
+        //     fromIndex: "0",
+        //     pageLength: "20",
+        //     path: undefined
+        // }
+
         const fi = params.fromIndex || 0;
         const ti = params.pageLength || this.increment;
         if (this.state.data) {
             this.state.data.nextPage = this.state.data.previousPage = null;
             this.setState(this.state);
         }
-        Meteor.call("images", params.path, fi, ti, (err, res) => {
+
+        getImageInfoList().then(res => {
+            // // res  from api
+            // {
+            //     images: [
+            //         {
+            //             id: "/edit/%2Fbitmap_labeling.png",
+            //             name: "bitmap_labeling.png",
+            //             url: "//bitmap_labeling.png",
+            //         },{
+            //             id: "/edit/%2Fbitmap_labeling.png",
+            //             name: "bitmap_labeling.png",
+            //             url: "//bitmap_labeling.png",
+            //         }
+            //     ]
+            // }
+            // must have folers?
             this.setState({data: res});
-            if (res) {
+        })
 
-                let msg = "";
-                if (res.folders.length > 0) {
-                    msg += res.folders.length + " folder";
-                    if (res.folders.length > 1)
-                        msg += "s";
-                }
-                if (res.images.length > 0) {
-                    if (res.folders.length > 0)
-                        msg += ", ";
-                    msg += res.imagesCount + " image";
-                    if (res.imagesCount > 1)
-                        msg += "s";
-                }
-                this.sendMsg("folderStats", {message: msg});
 
-            }else{
-                console.log(err);
-            }
-        });
+        // // get images from api;
+        // Meteor.call("images", params.path, fi, ti, (err, res) => {
+        //     this.setState({data: res});
+
+        //     and get filePath from api dont need folder
+        //     if (res) {
+
+        //         let msg = "";
+        //         if (res.folders.length > 0) {
+        //             msg += res.folders.length + " folder";
+        //             if (res.folders.length > 1)
+        //                 msg += "s";
+        //         }
+        //         if (res.images.length > 0) {
+        //             if (res.folders.length > 0)
+        //                 msg += ", ";
+        //             msg += res.imagesCount + " image";
+        //             if (res.imagesCount > 1)
+        //                 msg += "s";
+        //         }
+
+        //         // msg  "2 imageUrl" str
+        //         this.sendMsg("folderStats", {message: msg});
+
+        //     }else{
+        //         console.log(err);
+        //     }
+        // });
     }
 
     UNSAFE_componentWillReceiveProps(props) {
@@ -67,7 +102,7 @@ class SseNavigatorApp extends React.Component {
     }
 
     startEditing(image) {
-        this.props.history.push(image.editUrl);
+        this.props.history.push(`/edit/${image.id}/image/${image.name}/`);
     }
 
     render() {
@@ -98,28 +133,17 @@ class SseNavigatorApp extends React.Component {
                             </IconButton>
                         </Link>
                     </div>
-
-                        <div className="hflex wrap w100 h100">
-                        {this.state.data.folders.map((p) =>
-                            (<Link key={p.url} to={p.url}>
-                                <div className="vflex flex-align-items-center sse-folder">
-                                    <Folder />
-                                    <Typography align="center" noWrap
-                                    style={{width: "200px"}}>{p.name}</Typography>
-                                </div>
-                            </Link>)
-                        )}
-                    </div>
                     <div className="hflex wrap w100 h100">
                         {this.state.data.images.map((image) =>
                             (<div
                                   onClick={() => this.startEditing(image)}
                                   onDoubleClick={() => {this.startEditing(image)}}
                                   key={SseGlobals.getFileUrl(image.url) + Math.random()}>
-                                <SseImageThumbnail image={image}
-                                                   annotated={this.props.urlMap.get(decodeURIComponent(image.url))}/>
+                                <SseImageThumbnail image={image}/>
                             </div>)
                         )}
+                        {/* <div className='uploadFileBtn'>
+                        </div> */}
                     </div>
 
                 </div>
@@ -128,11 +152,17 @@ class SseNavigatorApp extends React.Component {
     }
 }
 
-export default withTracker((props) => {
-    Meteor.subscribe("sse-labeled-images");
-    const annotated = SseSamples.find({file: {"$exists": true}}).fetch();
-    let urlMap = new Map();
-    annotated.forEach(o => urlMap.set(decodeURIComponent(o.url), true));
-    return {urlMap};
-})(SseNavigatorApp);
+// export default withTracker((props) => {
+//     // track props  add attribute urlmap in props , use in dom 
+//     // this.props.urlMap were null
 
+//     Meteor.subscribe("sse-labeled-images");
+
+//     // what you get here is basicInfo
+//     const annotated = SseSamples.find({file: {"$exists": true}}).fetch();
+//     let urlMap = new Map();
+//     annotated.forEach(o => urlMap.set(decodeURIComponent(o.url), true));
+//     return {urlMap};
+// })(SseNavigatorApp);
+
+export default SseNavigatorApp;

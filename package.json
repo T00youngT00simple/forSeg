@@ -20,11 +20,22 @@
   "scripts": {
     "start": "meteor run --settings settings.json --exclude-archs \"web.browser.legacy, web.cordova\""
   },
+  "proxy": {
+    "/api/": {
+      "target": "http://36.138.169.88:8090",
+      "changeOrigin": true,
+      "pathRewrite": {
+        "^/api": "http://localhost:8000"
+      }
+    }
+  },
   "dependencies": {
     "@babel/runtime": "7.12.5",
     "@material-ui/core": "4.11.2",
     "@tweenjs/tween.js": "17.2.0",
     "acorn": "8.0.4",
+    "antd": "^4.19.2",
+    "axios": "^0.26.1",
     "body-parser": "1.18.3",
     "canvas-filters": "1.0.1",
     "color": "3.0.0",

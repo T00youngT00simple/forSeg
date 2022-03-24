@@ -420,6 +420,7 @@ export default class SseEditor2d extends React.Component {
             path.polygon = polygon;
 
 
+            // api argument currentSample
             this.currentSample.objects.push({
                 classIndex: path.feature.classIndex,
                 layer: path.feature.layer,

@@ -83,39 +83,6 @@ export default class SseEditor3d extends React.Component {
         };
 
         this.cameraTween = new TWEEN.Tween(this.cameraState).onStop(endCameraTween).onComplete(endCameraTween);
-
-
-
-
-        /*
-                const imports = [
-                    "/lib/js/examples/js/Octree.js",
-                    "/lib/js/geometries/ConvexGeometry.js",
-                    "/lib/js/renderers/CanvasRenderer.js",
-                    "/lib/js/Detector.js",
-                    "/lib/js/QuickHull.js"];
-
-                let loadedCount = imports.length;
-                const loadDep = (result) => {
-                    if (result) {
-                        eval(result.content);
-                        loadedCount--;
-                        if (loadedCount === 0) {
-                            this.init();
-                        }
-                    }
-                };
-
-                imports.forEach(u =>
-                    HTTP.call("GET", u,
-                        null, (error, result) => {
-                            if (error)
-                                console.log(error);
-                            else
-                                loadDep(result);
-
-                        }));
-        */
     }
 
     render() {
@@ -2021,11 +1988,32 @@ export default class SseEditor3d extends React.Component {
     }
 
     saveBinaryLabels() {
-        this.dataManager.saveBinaryFile(this.props.imageUrl + ".labels", this.cloudData.map(x => x.classIndex));
+        let cloudData = {};
+        let hasSelectedLabelName = [];
+
+        let activeClassesSets = this.activeSoc || this.props.classesSets[0];
+
+        this.cloudData.forEach((pt, pos) => {
+            let socObj = activeClassesSets.descriptors.find(objDesc => objDesc.classIndex == pt.classIndex)
+
+            if (socObj && socObj.classIndex != 0 && pt.classIndex == socObj.classIndex){
+                let socObjLabel = socObj.label;
+
+                if (!hasSelectedLabelName.find(labelName => labelName == socObjLabel)){
+                    hasSelectedLabelName.push(socObjLabel);
+                    cloudData[socObjLabel] = [pos];
+
+                }else {
+                    cloudData[socObjLabel].push(pos);
+                }
+            }
+        });
+
+        this.dataManager.saveBinaryFile(this.props.imageId , cloudData);
     }
 
     saveBinaryObjects() {
-        this.dataManager.saveBinaryFile(this.props.imageUrl + ".objects", Array.from(this.objects));
+        this.dataManager.saveBinaryFile(this.props.imageId, Array.from(this.objects));
     }
 
     saveAll() {
@@ -2035,6 +2023,8 @@ export default class SseEditor3d extends React.Component {
     }
 
     saveMeta() {
+        console.log(this.meta);
+
         Meteor.call("saveData", this.meta);
     }
 
@@ -2062,15 +2052,45 @@ export default class SseEditor3d extends React.Component {
         }
 
         this.sendMsg("currentSample", {data: this.meta});
-        const fileUrl = SseGlobals.getFileUrl(this.props.imageUrl);
+
+        // const fileUrl = SseGlobals.getFileUrl(this.props.imageUrl);
+        const fileUrl = this.props.imageUrl;
 
         this.loadPCDFile(fileUrl).then(() => {
+            // sometime were {url: this.props.imageUrl}
+            // to set labelArray 0;
+
             this.rotateGeometry(this.meta.rotationX, this.meta.rotationY, this.meta.rotationZ);
+            
             this.sendMsg("bottom-right-label", {message: "Loading labels..."});
-            this.dataManager.loadBinaryFile(this.props.imageUrl + ".labels")
+
+            // api instead of it
+            // datamange loadFile xmlHttpRequest
+            this.dataManager.loadBinaryFile(this.props.imageId)
                 .then(result => {
+
+                    let cloudData = [];
+                    let labelArray = this.cloudData.map(x => x.classIndex);
+
+                    let activeClassesSets = this.activeSoc || this.props.classesSets[0];
+
+                    for ( var labelName in result.cloudData ) {
+                        let socObjClassIndex = activeClassesSets.descriptors.find(objDesc => objDesc.label == labelName).classIndex;
+
+                        result.cloudData[labelName].forEach((item) =>{
+                            cloudData.push({
+                                classIndex: socObjClassIndex,
+                                index: item
+                            })
+                        })
+                    }
+                    
+                    cloudData.forEach((cloudDataObj) => {
+                        labelArray[cloudDataObj.index] = cloudDataObj.classIndex
+                    })
+
                     this.sendMsg("bottom-right-label", {message: "Loading objects..."});
-                    this.labelArray = result;
+                    this.labelArray = labelArray;
                     this.maxClassIndex = 0;
                     for (var i = 0; i < this.labelArray.length; i++) {
                         if (this.labelArray[i] > this.maxClassIndex) {
@@ -2081,15 +2101,16 @@ export default class SseEditor3d extends React.Component {
                 }, () => {
                     this.saveBinaryLabels();
                 }).then(() => {
-                this.dataManager.loadBinaryFile(this.props.imageUrl + ".objects").then(result => {
-                    if (!result.forEach)
-                        result = undefined;
-                    this.display(result, this.positionArray, this.labelArray, this.rgbArray).then( ()=>{
+                    this.dataManager.loadBinaryFile(this.props.imageId).then(result => {
+                        if (!result.forEach)
+                            result = undefined;
+                        this.display(result, this.positionArray, this.labelArray, this.rgbArray).then( ()=>{
+                            this.initDone();
+                        });
+                    }, () => {
                         this.initDone();
-                    });
-                }, () => {
-                    this.initDone();
-                });
+                    }
+                );
             });
         });
     }

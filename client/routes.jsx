@@ -10,7 +10,7 @@ export const renderRoutes = () => (
     <Router history={browserHistory}>
         <div>
             <Route exact path="/" render={()=>(<Redirect to="/browse/0/20/"/>)}/>
-            <Route path="/edit/:path" component={SseEditorApp}/>
+            <Route path="/edit/:id/image/:name/" component={SseEditorApp}/>
             <Route exact path="/edit/" render={()=>(<Redirect to="/browse/0/20/"/>)}/>
             <Route exact path="/edit" render={()=>(<Redirect to="/browse/0/20/"/>)}/>
             <Route path="/browse/:fromIndex/:pageLength/:path?" component={SseNavigatorApp}/>

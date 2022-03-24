@@ -52,21 +52,7 @@ Meteor.methods({
         });
         return data;
     },
-    /*
-        'rebuildTagList'() {
-            const all = SseSamples.find().fetch();
-            const tags = new Set();
-            all.forEach(s => {
-                if (s.tags) {
-                    s.tags.forEach(t => {
-                        tags.add(t)
-                    })
-                }
-            });
-            SseProps.remove({});
-            SseProps.upsert({key: "tags"}, {key: "tags", value: Array.from(tags)});
-        },
-    */
+
     'images'(folder, pageIndex, pageLength) {
         const isDirectory = source => lstatSync(source).isDirectory();
         const isImage = source => {
@@ -142,6 +128,8 @@ Meteor.methods({
         sample.lastEditDate = new Date();
         if (!sample.firstEditDate)
             sample.firstEditDate = new Date();
+        
+        // mainly save tags
         if (sample.tags) {
             SseProps.upsert({key: "tags"}, {$addToSet: {value: {$each: sample.tags}}});
         }
