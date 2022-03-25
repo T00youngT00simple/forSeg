@@ -8,8 +8,9 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import SseMsg from "./SseMsg";
-import $ from "jquery";
+import $, { post } from "jquery";
 
+import { postSample } from "../../api/segmentation"
 class SseBottomBar extends React.Component {
 
     constructor() {
@@ -30,11 +31,10 @@ class SseBottomBar extends React.Component {
         });
 
         this.onMsg("currentSample", (arg) => {
-            console.log("arg");
-            console.log(arg);
+            // get has already tags from api getSample 
+            // by meteor withTracker allTags use as props
 
             this.currentSample = arg.data;
-            // setState from message queuing 
 
             this.setState({tags: this.currentSample.tags || []})
         });
@@ -61,6 +61,8 @@ class SseBottomBar extends React.Component {
     handleClose = () => {
         this.setState({open: false});
         this.currentSample.tags = this.tagsStringToArray($("#tagField").val()).filter(x => x);
+
+        // if tags changed will call save this.meta which have tags attribute
         this.sendMsg("tagsChanged");
     };
 
@@ -71,6 +73,13 @@ class SseBottomBar extends React.Component {
     addTag(t) {
         this.setState({tags: this.tagsStringToArray(this.tagsArrayToString(this.state.tags) + "," + t)});
     }
+
+    // addTag(t) {
+    //     return new Promise((res, rej) => {
+    //         this.setState({tags: this.tagsStringToArray(this.tagsArrayToString(this.state.tags) + "," + t)});
+    //         res();
+    //     })
+    // }
 
     render() {
 
@@ -105,7 +114,7 @@ class SseBottomBar extends React.Component {
                             />
                             <div className="m5-bottom m5-top">Tags previously used</div>
                             <div className="hflex w100 wrap">
-                                {this.props.appProps.tags.value.map(t => (
+                                {this.props.allTags.map(t => (
                                     <div
                                         onClick={() => this.addTag(t)}
                                         key={t}
@@ -127,35 +136,17 @@ class SseBottomBar extends React.Component {
     }
 }
 
-export default withTracker((props) => {
-    // if dont give up meteor, can get sseProps(propsTags) from Api here
-    // sse-props were all tags
+export default SseBottomBar;
 
-    // appProps object
-    // {
-    //     "tags": {
-    //         "_id": "JPiWsSDRD4Egj7AKv",
-    //         "key": "tags",
-    //         "value": [
-    //             "ssssw1qws",
-    //             "dfgdfgdfgdfg",
-    //             "3333333",
-    //             "qweqweqwe",
-    //             "dfgdfgdfgdf",
-    //             "1"
-    //         ]
-    //     }
-    // }
+//     Meteor.subscribe("sse-props");
+//     const aps = SseProps.find().fetch();
+//     const appProps = _.indexBy(aps, "key");
+//     if (!appProps.tags)
+//         appProps.tags = {value: []};
 
-    Meteor.subscribe("sse-props");
-    const aps = SseProps.find().fetch();
-    const appProps = _.indexBy(aps, "key");
-    if (!appProps.tags)
-        appProps.tags = {value: []};
-
-    console.log("appProps");
-    console.log(appProps);
+//     console.log("appProps");
+//     console.log(appProps);
     
 
-    return {appProps};
-})(SseBottomBar);
+//     return {appProps};
+// })(SseBottomBar);

@@ -19,6 +19,8 @@ import lineclip from "lineclip";
 import SseMsg from "../../common/SseMsg";
 import $ from "jquery";
 
+import { getSample, postSample } from '../../../api/segmentation';
+
 const PI = Math.PI;
 const DOUBLEPI = PI * 2;
 const HALFPI = PI / 2;
@@ -2023,9 +2025,10 @@ export default class SseEditor3d extends React.Component {
     }
 
     saveMeta() {
-        console.log(this.meta);
-
-        Meteor.call("saveData", this.meta);
+        // api save sample
+        // Meteor.call("saveData", this.meta);
+        
+        postSample(this.props.imageId, this.meta).then()
     }
 
     initDone(){
@@ -2042,20 +2045,27 @@ export default class SseEditor3d extends React.Component {
     }
 
     start() {
-        const serverMeta = SseSamples.findOne({url: this.props.imageUrl});
+        // api get SseSamples
+        
+        let serverMeta = this.props.sample;
+        // const serverMeta = {url: this.props.imageUrl};
+
         this.meta = serverMeta || {url: this.props.imageUrl};
-        if (serverMeta) {
+        if (serverMeta && serverMeta.socName) {
             this.meta.socName = serverMeta.socName;
             this.sendMsg("active-soc-name", {value: this.meta.socName});
         } else {
             this.meta.socName = this.activeSoc.name;
         }
 
+        console.log(this.meta);
+
         this.sendMsg("currentSample", {data: this.meta});
 
         // const fileUrl = SseGlobals.getFileUrl(this.props.imageUrl);
         const fileUrl = this.props.imageUrl;
 
+        // in loadPCDFile set this.meta.header
         this.loadPCDFile(fileUrl).then(() => {
             // sometime were {url: this.props.imageUrl}
             // to set labelArray 0;

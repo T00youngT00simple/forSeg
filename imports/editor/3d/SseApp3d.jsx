@@ -15,7 +15,7 @@ import SseObjectToolbar from "./SseObjectToolbar";
 import SseToolbar3d from "./SseToolbar3d";
 import SseTooltips3d from "./SseTooltips3d";
 
-import { getImageInfoDetail} from "../../../api/segmentation"  
+import { getImageInfoDetail, getTagList, getSample, getClassesSets } from "../../../api/segmentation"  
 
 export default class SseApp3d extends React.Component {
 
@@ -23,14 +23,19 @@ export default class SseApp3d extends React.Component {
         super();
 
         this.state = {
-            imageUrl: null
+            imageUrl: null,
+            allTags: [],
+            sample: null,
         };
 
         this.classesSets = [];
-        Meteor.call("getClassesSets", (err, res) => {
-            this.classesSets = res.map(cset => new SseSetOfClasses(cset));
-            this.setState({classesReady: true});
-        });
+        // Meteor.call("getClassesSets", (err, res) => {
+
+        //     console.log(res);
+
+        //     this.classesSets = res.map(cset => new SseSetOfClasses(cset));
+        //     this.setState({classesReady: true});
+        // });
     }
 
     setupTooltips() {
@@ -50,14 +55,30 @@ export default class SseApp3d extends React.Component {
             this.setState({
                 imageUrl: res.image.url
             })
-
         });
+
+        getTagList().then(res => {
+            this.setState({
+                allTags: res.tags || []
+            })
+        });
+
+        getSample(this.props.imageId).then(res => {
+            this.setState({
+                sample: res.sample
+            })
+        })
+
+        getClassesSets().then(res => {
+            this.classesSets = res.classesSets.map(cset => new SseSetOfClasses(cset));
+            this.setState({classesReady: true});
+        })
 
         this.setupTooltips();
     }
 
     render() {
-        if (!this.state.classesReady)
+        if (!this.state.classesReady || !this.state.imageUrl || !this.state.allTags || !this.state.sample)
             return null;
         return (
             <div className="w100 h100">
@@ -84,6 +105,7 @@ export default class SseApp3d extends React.Component {
                                                 imageUrl={this.state.imageUrl}
                                                 imageId={this.props.imageId}
                                                 classesSets={this.classesSets}
+                                                sample={this.state.sample}
                                             />
                                             <div
                                                 id="waiting"
@@ -93,7 +115,6 @@ export default class SseApp3d extends React.Component {
                                                     <Autorenew/>
                                                 </div>
                                             </div>
-
                                         </div>
                                         <SseCameraToolbar/>
                                     </div>
@@ -101,7 +122,7 @@ export default class SseApp3d extends React.Component {
                                 </div>
 
                             </div>
-                            <SseBottomBar/>
+                            <SseBottomBar allTags={this.state.allTags}/>
                         </div>
                         <SseSnackbar/>
                         <SseConfirmationDialog

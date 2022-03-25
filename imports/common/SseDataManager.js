@@ -1,6 +1,6 @@
 import FIC from "fastintcompression";
 import SseMsg from "./SseMsg";
-import { getCloudDataDetail, postCloudDataDetail } from "../../api/segmentation"
+import { postCloudDataDetail } from "../../api/segmentation"
 import { baseUrl } from '../../config/env'
 
 export default class SseDataManager {
@@ -125,9 +125,6 @@ export default class SseDataManager {
           // this data were ... like [0,0,0,0,0 ...........]
         // will post is definitely not like this
 
-        // checkout this function to someone api post meta data 
-        // attribute in meta
-
         // like load    allSave
         const worker = new Worker("/SseDataWorker.js");
         worker.addEventListener("message", (arg) => {
@@ -146,7 +143,7 @@ export default class SseDataManager {
 
         // to be added real APi
         // const url = "/datafile" + fileName;
-        const url =  `${baseUrl}/cloud/${imageId}/data/`;
+        const url =  `${baseUrl}/image/${imageId}/cloud/data/`;
 
         const oReq = new XMLHttpRequest();
 

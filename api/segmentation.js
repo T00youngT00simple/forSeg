@@ -1,13 +1,6 @@
 import request from '../utils/request'
 import { baseUrl } from '../config/env'
 
-export function getMetaBasicInfo(){
-    return request({
-        url: `${baseUrl}/meta/basic/info/`,
-        method: "get"
-    })
-}
-
 
 export function getImageInfoList(){
     return request({
@@ -25,18 +18,43 @@ export function getImageInfoDetail(imageId){
 }
 
 
-export function getCloudDataDetail(){
+export function postCloudDataDetail(imageId, cloudData){
     return request({
-        url: `${baseUrl}/cloud/data/`,
-        method: "get"
+        url: `${baseUrl}/image/${imageId}/cloud/data/`,
+        method: "POST",
+        data: {cloudData: cloudData},
     })
 }
 
 
-export function postCloudDataDetail(imageId, cloudData){
+export function getSample(imageId){
     return request({
-        url: `${baseUrl}/cloud/${imageId}/data/`,
+        url: `${baseUrl}/image/${imageId}/sample/details/`,
+        method: "get",
+    })
+}
+
+
+export function postSample(imageId, sampleDic){
+    return request({
+        url: `${baseUrl}/image/${imageId}/sample/details/`,
         method: "POST",
-        data: {cloudData: cloudData},
+        data: sampleDic,
+    })
+}
+
+
+export function getTagList(){
+    return request({
+        url: `${baseUrl}/image/tag/list/`,
+        method: "get",
+    })
+}
+
+
+export function getClassesSets(){
+    return request({
+        url: `${baseUrl}/classes/set/`,
+        method: "get",
     })
 }

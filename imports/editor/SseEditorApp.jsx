@@ -12,7 +12,9 @@ class SseEditorApp extends React.Component {
 
     render() {
         if (this.state.mode == "2d")
-            return <SseApp2d imageId={this.props.match.params.id}/>;
+            // focus on 3d now
+            // return <SseApp2d imageId={this.props.match.params.id}/>;
+            return <div></div>;
         else if (this.state.mode == "3d")
             return <SseApp3d imageId={this.props.match.params.id}/>;
         else return null;
