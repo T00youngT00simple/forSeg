@@ -1971,10 +1971,10 @@ export default class SseEditor3d extends React.Component {
 
             this.updateClassFilter(-1);
 
-            this.cameraPreset("front", true);
+            this.cameraPreset("front", true); 
             res();
         });
-    }
+    } 
 
     loadPCDFile(fileUrl) {
         setTimeout(()=>
@@ -2011,11 +2011,11 @@ export default class SseEditor3d extends React.Component {
             }
         });
 
-        this.dataManager.saveBinaryFile(this.props.imageId , cloudData);
+        this.dataManager.saveBinary(this.props.imageId , cloudData, 'cloudData');
     }
 
     saveBinaryObjects() {
-        this.dataManager.saveBinaryFile(this.props.imageId, Array.from(this.objects));
+        this.dataManager.saveBinary(this.props.imageId, Array.from(this.objects), 'objectData');
     }
 
     saveAll() {
@@ -2058,8 +2058,6 @@ export default class SseEditor3d extends React.Component {
             this.meta.socName = this.activeSoc.name;
         }
 
-        console.log(this.meta);
-
         this.sendMsg("currentSample", {data: this.meta});
 
         // const fileUrl = SseGlobals.getFileUrl(this.props.imageUrl);
@@ -2076,7 +2074,7 @@ export default class SseEditor3d extends React.Component {
 
             // api instead of it
             // datamange loadFile xmlHttpRequest
-            this.dataManager.loadBinaryFile(this.props.imageId)
+            this.dataManager.loadBinary(this.props.imageId, 'cloudData')
                 .then(result => {
 
                     let cloudData = [];
@@ -2111,10 +2109,10 @@ export default class SseEditor3d extends React.Component {
                 }, () => {
                     this.saveBinaryLabels();
                 }).then(() => {
-                    this.dataManager.loadBinaryFile(this.props.imageId).then(result => {
-                        if (!result.forEach)
+                    this.dataManager.loadBinary(this.props.imageId, 'objectData').then(result => {
+                        if (!result.objectData.forEach)
                             result = undefined;
-                        this.display(result, this.positionArray, this.labelArray, this.rgbArray).then( ()=>{
+                        this.display(result.objectData, this.positionArray, this.labelArray, this.rgbArray).then( ()=>{
                             this.initDone();
                         });
                     }, () => {

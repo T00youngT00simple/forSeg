@@ -27,6 +27,15 @@ export function postCloudDataDetail(imageId, cloudData){
 }
 
 
+export function postObjectDataDetail(imageId, objectData){
+    return request({
+        url: `${baseUrl}/image/${imageId}/object/data/`,
+        method: "POST",
+        data: {objectData: objectData},
+    })
+}
+
+
 export function getSample(imageId){
     return request({
         url: `${baseUrl}/image/${imageId}/sample/details/`,

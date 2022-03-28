@@ -1,6 +1,6 @@
 import FIC from "fastintcompression";
 import SseMsg from "./SseMsg";
-import { postCloudDataDetail } from "../../api/segmentation"
+import { postCloudDataDetail, postObjectDataDetail } from "../../api/segmentation"
 import { baseUrl } from '../../config/env'
 
 export default class SseDataManager {
@@ -101,7 +101,7 @@ export default class SseDataManager {
     }
 
 
-    saveBinaryFile(imageId, data) {
+    saveBinary(imageId, data, method) {
         // const worker = new Worker("/SseDataWorker.js");
         // worker.addEventListener("message", (arg) => {
         //     worker.terminate();
@@ -120,7 +120,6 @@ export default class SseDataManager {
         //     oReq.send(binary);
         // });
 
-
         // and work here
           // this data were ... like [0,0,0,0,0 ...........]
         // will post is definitely not like this
@@ -130,20 +129,29 @@ export default class SseDataManager {
         worker.addEventListener("message", (arg) => {
             worker.terminate();
             //this.sendMsg("bottom-right-label", {message: "Sending..."})
-            postCloudDataDetail(imageId, data).then(res => {
 
-            })
+            if (method && method == 'cloudData')
+            {
+                postCloudDataDetail(imageId, data);
+            } else if (method && method == 'objectData'){
+                postObjectDataDetail(imageId, data);
+            }
 
         });
         worker.postMessage({operation: "compress", data});
     }
 
-    loadBinaryFile(imageId) {
+    loadBinary(imageId, method) {
         const worker = new Worker("/SseDataWorker.js");
 
         // to be added real APi
         // const url = "/datafile" + fileName;
-        const url =  `${baseUrl}/image/${imageId}/cloud/data/`;
+
+        let url = `${baseUrl}/image/${imageId}/cloud/data/`;
+
+        if (method && method == 'objectData'){
+            url = `${baseUrl}/image/${imageId}/object/data/`;
+        }
 
         const oReq = new XMLHttpRequest();
 
