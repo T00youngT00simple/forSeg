@@ -1,6 +1,6 @@
 import FIC from "fastintcompression";
 import SseMsg from "./SseMsg";
-import { postCloudDataDetail, postObjectDataDetail } from "../../api/segmentation"
+import { detailSaveResult, commitSaveResult } from "../../api/segmentation"
 import { baseUrl } from '../../config/env'
 
 export default class SseDataManager {
@@ -101,59 +101,33 @@ export default class SseDataManager {
     }
 
 
-    saveBinary(imageId, data, method) {
-        // const worker = new Worker("/SseDataWorker.js");
-        // worker.addEventListener("message", (arg) => {
-        //     worker.terminate();
-        //     //this.sendMsg("bottom-right-label", {message: "Sending..."})
-        //     const binary = arg.data.result;
-        //     if (!binary)
-        //         return;
-
-        //     // change Url ?
-        //     const url = "/save" + fileName;
-        //     // const url = "http://localhost:8000/cloud/data/list/"
-
-        //     const oReq = new XMLHttpRequest();
-        //     oReq.open("POST", url, true);
-        //     oReq.setRequestHeader("Content-Type", "application/octet-stream");
-        //     oReq.send(binary);
-        // });
-
-        // and work here
-          // this data were ... like [0,0,0,0,0 ...........]
-        // will post is definitely not like this
-
-        // like load    allSave
+    saveResult(taskId, cloudData) {
+        let urlType = 'tagging-task'
+        let taskCommitDto = {
+            data: cloudData,
+            taskId: taskId,
+            level: 0,
+            weight: 0
+        }
+        
         const worker = new Worker("/SseDataWorker.js");
         worker.addEventListener("message", (arg) => {
             worker.terminate();
-            //this.sendMsg("bottom-right-label", {message: "Sending..."})
 
-            if (method && method == 'cloudData')
-            {
-                postCloudDataDetail(imageId, data);
-            } else if (method && method == 'objectData'){
-                postObjectDataDetail(imageId, data);
-            }
+            detailSaveResult(taskCommitDto, urlType);
+            commitResult(taskCommitDto, urlType);
 
         });
-        worker.postMessage({operation: "compress", data});
+        // worker.postMessage({operation: "compress", cloudData});
     }
 
     loadBinary(imageId, method) {
         const worker = new Worker("/SseDataWorker.js");
 
-        // to be added real APi
-        // const url = "/datafile" + fileName;
+        let url = `${baseUrl}/image/${imageId}/object/data/`;
 
-        let url = `${baseUrl}/image/${imageId}/cloud/data/`;
-
-        if (method && method == 'objectData'){
-            url = `${baseUrl}/image/${imageId}/object/data/`;
-        }
-
-        const oReq = new XMLHttpRequest();
+ 
+       const oReq = new XMLHttpRequest();
 
         oReq.responseType = "arraybuffer";
         oReq.open("GET", url, true);
